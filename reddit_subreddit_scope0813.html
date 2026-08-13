@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reddit 玩家讨论关注点双周看板（8.1~8.13）</title>
+<style>
+:root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text2: #4a4a6a;
+    --accent: #6366f1;
+    --accent2: #8b5cf6;
+    --green: #10b981;
+    --orange: #f59e0b;
+    --border: #e5e7eb;
+    --tab-bg: #e8e9f5;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+}
+.container { max-width: 1100px; margin: 0 auto; }
+header {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 20px;
+}
+header h1 { font-size: 2rem; margin-bottom: 10px; }
+header p { opacity: 0.9; font-size: 1rem; }
+
+/* ===== Tab Navigation ===== */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding: 6px 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+.tab-btn {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text2);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.tab-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+}
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.tab-btn .tab-count {
+    display: inline-block;
+    background: rgba(0,0,0,0.08);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.75rem;
+    margin-left: 6px;
+}
+.tab-btn.active .tab-count {
+    background: rgba(255,255,255,0.25);
+}
+.tab-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.tab-btn.active .tab-dot {
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.35);
+}
+
+/* ===== Pages ===== */
+.page { display: none; animation: fadeIn 0.25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.metric-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+}
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 6px;
+}
+.metric-label { font-size: 0.85rem; color: var(--text2); }
+
+.section {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+}
+.section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.section h2 .cat-icon { font-size: 1.5rem; }
+.section-desc {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-bottom: 16px;
+}
+
+/* ===== Sub Cards ===== */
+.sub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+.sub-card {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sub-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+}
+.sub-num {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--cat-color, var(--accent)), var(--accent2));
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+.sub-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    word-break: break-all;
+}
+.sub-desc {
+    font-size: 0.8rem;
+    color: var(--text2);
+    line-height: 1.4;
+}
+.tag-note {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-top: 8px;
+}
+
+/* ===== Category Summary Cards (overview page) ===== */
+.cat-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+}
+.cat-summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.cat-summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--cat-color, var(--accent)), var(--accent2));
+    opacity: 0.8;
+}
+.cat-summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(99,102,241,0.18);
+    border-color: var(--cat-color, var(--accent));
+}
+.cat-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.cat-summary-icon {
+    font-size: 1.2rem;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cat-soft, #eef2ff);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+.cat-summary-name { font-weight: 700; font-size: 1rem; }
+.cat-summary-desc {
+    font-size: 0.8rem;
+    color: var(--text2);
+    margin-bottom: 10px;
+    min-height: 40px;
+}
+.cat-summary-subs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.cat-summary-subs .mini-chip {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    color: var(--text2);
+    font-weight: 500;
+}
+.cat-summary-footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--cat-color, var(--accent));
+    font-weight: 600;
+}
+
+/* ===== Full table ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+table th {
+    background: var(--bg);
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: var(--text2);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+}
+table tr:last-child td { border-bottom: none; }
+table tr:hover td { background: #fafafe; }
+.cat-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 12px;
+    background: var(--badge-bg, #eef2ff);
+    color: var(--badge-fg, #4338ca);
+    white-space: nowrap;
+}
+
+/* ===== Category detail page ===== */
+.cat-hero {
+    background: linear-gradient(135deg, var(--cat-color, var(--accent)), var(--accent2));
+    border-radius: 12px;
+    color: white;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+.cat-hero h2 { font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+.cat-hero p { opacity: 0.9; font-size: 0.9rem; margin-top: 6px; }
+.cat-hero .cat-prio {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 2px 12px;
+    font-size: 0.75rem;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+/* ===== Data snapshot (v2.0) ===== */
+.snap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.snap-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border-left: 4px solid var(--accent);
+}
+.snap-card.green { border-left-color: var(--green); }
+.snap-card.orange { border-left-color: var(--orange); }
+.snap-card .sv { font-size: 1.5rem; font-weight: 800; color: var(--accent); line-height: 1.1; }
+.snap-card .sl { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+.insight-list { display: flex; flex-direction: column; gap: 8px; }
+.insight-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px; font-size: 0.85rem;
+}
+.insight-item .ii-icon { font-size: 1.1rem; flex-shrink: 0; }
+.insight-item b { color: var(--accent); }
+.insight-item .ii-num {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 0.72rem; font-weight: 700;
+    min-width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    margin-top: 2px;
+}
+.hot-post { padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 0.84rem; }
+.hot-post:last-child { border-bottom: none; }
+.hot-post .hp-title { font-weight: 600; }
+.hot-post .hp-meta { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
+.hot-post .hp-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+.grow-row {
+    display: grid;
+    grid-template-columns: 42px 1fr 60px 40px 40px 90px;
+    align-items: center; gap: 8px;
+    padding: 8px 4px; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+}
+.grow-row:last-child { border-bottom: none; }
+.grow-row .gr-rank { color: var(--text2); font-weight: 700; text-align: center; }
+.grow-row .gr-name { font-weight: 700; }
+.grow-row .gr-num { text-align: right; font-variant-numeric: tabular-nums; }
+.grow-row .gr-bar { height: 6px; background: #eef0f7; border-radius: 3px; overflow: hidden; }
+.grow-row .gr-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; }
+.grow-head {
+    display: grid;
+    grid-template-columns: 42px 1fr 60px 40px 40px 90px;
+    gap: 8px; padding: 6px 4px; font-size: 0.72rem; color: var(--text2);
+    border-bottom: 2px solid var(--border); font-weight: 600;
+}
+.topic-chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.topic-chip {
+    background: #eef2ff; color: #4338ca; border-radius: 14px;
+    padding: 5px 14px; font-size: 0.8rem; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+}
+.topic-chip i { font-style: normal; font-size: 0.68rem; opacity: 0.75; }
+.tag-done {
+    display: inline-block;
+    background: var(--green);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--text2);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .sub-grid { grid-template-columns: 1fr 1fr; }
+    header h1 { font-size: 1.4rem; }
+    .cat-summary-grid { grid-template-columns: 1fr; }
+    .tabs { padding-bottom: 8px; }
+}
+@media (max-width: 480px) {
+    .sub-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+    <h1>Reddit 玩家讨论关注点双周看板</h1>
+    <p>统计窗口 8.1~8.13 · 5 大分类 · 针对 r/gaming 分区借助 Apify 重点爬取了 2000+ 条结构化数据进行效果评估</p>
+</header>
+
+<!-- Tab Navigation -->
+<nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-page="overview">📊 汇总概览<span class="tab-count">20</span></button>
+    <button class="tab-btn" data-page="general"><span class="tab-dot" style="background:#6366f1"></span>🎮 游戏综合分区<span class="tab-count">5</span><span class="tag-done">有数据</span></button>
+    <button class="tab-btn" data-page="hardware"><span class="tab-dot" style="background:#3b82f6"></span>🖥️ 硬件设备分区<span class="tab-count">5</span><span class="tag-done">有数据</span></button>
+    <button class="tab-btn" data-page="platform"><span class="tab-dot" style="background:#f59e0b"></span>🛒 Steam 平台分区<span class="tab-count">1</span><span class="tag-done">有数据</span></button>
+    <button class="tab-btn" data-page="indie"><span class="tab-dot" style="background:#10b981"></span>💎 独立游戏分区<span class="tab-count">5</span><span class="tag-done">有数据</span></button>
+    <button class="tab-btn" data-page="genre"><span class="tab-dot" style="background:#ec4899"></span>🏷️ 热门品类分区<span class="tab-count">4</span><span class="tag-done">有数据</span></button>
+</nav>
+
+<!-- ==================== PAGE 1: OVERVIEW ==================== -->
+<div class="page active" id="page-overview">
+    <!-- ===== Overview: Value & Feasibility ===== -->
+    <div class="section">
+        <h2><span class="cat-icon">🎯</span>Reddit 平台热门帖、玩家评论的监控价值与可行方案</h2>
+        <div class="section-desc">信息爬取方案评估、用户画像、监控价值、社区范围与长期思路</div>
+        <p style="font-size:0.92rem;line-height:1.75;color:var(--text);">
+            Reddit 是全球最大的游戏玩家社区聚合平台之一，拥有超过 1.2 亿活跃订阅用户。平台上的热门帖（Post）与玩家评论（Comment）构成了树状结构的讨论生态，是挖掘海外玩家真实反馈、追踪热门产品动态、洞察细分品类趋势的重要信息源。本看板基于 Apify 结构化爬取方案，对 20 个重点游戏社区进行双周监控，探索 Reddit 监控的业务价值与落地可行性。
+        </p>
+    </div>
+
+    <div class="section">
+        <h2><span class="cat-icon">👤</span>Reddit 平台用户大致画像</h2>
+        <div class="section-desc">核心玩家群体特征与偏好</div>
+        <div class="insight-list">
+            <div class="insight-item">
+                <span class="ii-num">1</span>
+                <span><b>端游/主机游戏用户为主</b> — Reddit 平台的核心用户群体中，端游与主机游戏玩家占比近九成，是平台讨论的主要发声群体。</span>
+            </div>
+            <div class="insight-item">
+                <span class="ii-num">2</span>
+                <span><b>同时具备手游玩家属性</b> — 很大比例用户同时也属于手游玩家，但讨论重心仍偏向电脑与主机端内容。</span>
+            </div>
+            <div class="insight-item">
+                <span class="ii-num">3</span>
+                <span><b>明显的硬核偏好标签</b> — 该群体大多具备非常明显的 PC / Core Gamer / Indie / Hardware / Hardcore Genre 偏好，对独立游戏、硬件设备、高难度品类关注度较高。</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><span class="cat-icon">💡</span>监控价值</h2>
+        <div class="section-desc">Reddit 监控对业务的核心贡献点</div>
+        <div class="insight-list">
+            <div class="insight-item">
+                <span class="ii-num">1</span>
+                <span><b>为希卡更早挖掘潜力产品</b> — 通过追踪海外玩家热门讨论的 IP 爆款与品类潜力新品，提前锁定值得关注的研发方向，但当前颗粒度仍不够精细，需持续衡量产出价值。</span>
+            </div>
+            <div class="insight-item">
+                <span class="ii-num">2</span>
+                <span><b>海外玩家讨论焦点与热门产品追踪洞察</b> — 平台用户偏 PC 与 Core Gamer 属性，其讨论热点对端游与独立游戏市场的风向判断具备参考意义。</span>
+            </div>
+            <div class="insight-item">
+                <span class="ii-num">3</span>
+                <span><b>热门题材玩法监控入库</b> — 将 Reddit 高频讨论的题材与玩法标签系统化归档，形成可检索的题材热度库，辅助选品与立项参考。</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><span class="cat-icon">📡</span>监控社区范围</h2>
+        <div class="section-desc">基于业务需求，重点关注两类社区</div>
+        <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+            Reddit 中有大量热门话题「subreddit」，基于我司业务需求，可重点关注以下两类：
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:14px;margin-bottom:14px;">
+            <div style="background:var(--bg);border-radius:10px;padding:16px;border:1px solid var(--border);">
+                <h3 style="font-size:1rem;margin-bottom:8px;color:var(--accent);">🎮 综合性游戏讨论社区</h3>
+                <p style="font-size:0.88rem;line-height:1.6;color:var(--text2);">整体更追逐聚焦 IP 大作，代表社区包括 r/gaming、r/Games、r/videogames、r/pcgaming，适合追踪大众市场热点与跨平台话题。</p>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:16px;border:1px solid var(--border);">
+                <h3 style="font-size:1rem;margin-bottom:8px;color:var(--accent);">🏷️ 细分游戏类目</h3>
+                <p style="font-size:0.88rem;line-height:1.6;color:var(--text2);">整体更偏向某类玩家群体，例如独立游戏分区（r/IndieGames、r/IndieGaming、r/IndieDev、r/gamedev）与热门品类分区（r/roguelikes、r/CozyGamers、r/MMORPG、r/horrorGaming），适合挖掘品类深度洞察。</p>
+            </div>
+        </div>
+        <p style="font-size:0.88rem;color:var(--text2);">此外还覆盖硬件设备分区（r/PS5、r/XboxSeriesX、r/NintendoSwitch、r/SteamDeck、r/Handhelds）与 Steam 平台分区（r/Steam），共 20 个社区。</p>
+    </div>
+
+    <div class="section">
+        <h2><span class="cat-icon">🤖</span>AI 爬取方案评估（Apify 结构化爬取）</h2>
+        <div class="section-desc">数据结构与初步效果分析</div>
+        <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+            <b>帖子与评论的树状结构</b> — Reddit 的帖子和评论可理解为树状结构：一个帖子（Post）作为根节点，下方挂载多层评论（Comment），形成分支嵌套的讨论树。Apify 结构化爬取可以将这一树状讨论完整提取为表格数据，便于后续清洗与分析。
+        </p>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px;">
+            <img src="img/reddit_tree_structure.png" alt="Reddit 帖子与评论树状结构" style="width:100%;display:block;">
+        </div>
+        <div style="font-size:0.78rem;color:var(--text2);text-align:center;margin-bottom:14px;">Reddit 帖子与评论的树状结构示意</div>
+        <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+            <b>初步爬取效果分析</b> — 以 r/gaming 为例进行了爬取效果测试，时限近两周，共爬取最热门 70 篇帖子，以及对应的 1,700+ 条评论，合计近 2,000 条未清洗的原始数据（Apify 免费额度基本耗光）。
+        </p>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px;">
+            <img src="img/apify_raw_data.png" alt="Apify 抓取原始数据表格" style="width:100%;display:block;">
+        </div>
+        <div style="font-size:0.78rem;color:var(--text2);text-align:center;margin-bottom:14px;">Apify 结构化爬取原始数据示例（r/gaming，70 帖 + 1,700+ 评论）</div>
+        <div class="insight-list">
+            <div class="insight-item">
+                <span class="ii-num">1</span>
+                <span><b>清洗后能定位重点产品</b> — 经数据清洗后，可定位玩家集中讨论的重点产品（但需手动检索辅助验证），并尝试摸索某类玩家的偏好。</span>
+            </div>
+            <div class="insight-item">
+                <span class="ii-num">2</span>
+                <span><b>更适合小圈子跟踪</b> — 细分类目社区（如 r/roguelikes、r/CozyGamers）讨论聚焦度高、玩家画像更统一，爬取效果与洞察深度优于泛综合社区。</span>
+            </div>
+            <div class="insight-item">
+                <span class="ii-num">3</span>
+                <span><b>长期方案：双周制 + 5 个重点社区</b> — 建议每两周做一次跟踪，选 5 个重点 subreddit 进行结构化爬取，每期处理数据量控制在 1~3 万条，预计不会有太大困难。</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><span class="cat-icon">⚖️</span>公司评估 Reddit 监控的两种思路</h2>
+        <div class="section-desc">价值定位与落地路径选择</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:14px;">
+            <div style="background:var(--bg);border-radius:10px;padding:16px;border:1px solid var(--border);border-left:4px solid var(--green);">
+                <h3 style="font-size:1rem;margin-bottom:8px;color:var(--green);">💎 思路一：定位产品</h3>
+                <p style="font-size:0.88rem;line-height:1.6;color:var(--text2);">追踪海外用户热门讨论的 IP 爆款、某些品类玩家反馈正向的潜力新品。落地更贴近服务希卡选品，是当下 Reddit 监控最直接的业务价值。</p>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:16px;border:1px solid var(--border);border-left:4px solid var(--orange);">
+                <h3 style="font-size:1rem;margin-bottom:8px;color:var(--orange);">🔍 思路二：用户深度洞察</h3>
+                <p style="font-size:0.88rem;line-height:1.6;color:var(--text2);">从某类用户深度洞察维度切入。若走此思路，首先需明确哪类用户是重点研究对象，再去多平台提取数据、结合交叉验证。Reddit 本身用户属性偏 PC，且单一平台视角有限，需配合其他渠道（如 TapTap、Discord、Twitter 等）互补。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><span class="cat-icon">🗺️</span>五大分类总览</h2>
+        <div class="section-desc">点击任意分类卡片，跳转到对应分页查看详情</div>
+        <div class="cat-summary-grid" id="cat-summary-grid"></div>
+    </div>
+
+    <div class="section">
+        <h2><span class="cat-icon">📋</span>完整监控清单（20 个社区）</h2>
+        <div class="section-desc">全量清单，按分类分组，编号即抓取配置中的序号</div>
+        <table>
+            <thead>
+                <tr><th>编号</th><th>社区（Subreddit）</th><th>分类</th><th>定位说明</th></tr>
+            </thead>
+            <tbody id="full-table-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ==================== PAGE 2-6: CATEGORY PAGES ==================== -->
+<div class="page" id="page-general"></div>
+<div class="page" id="page-hardware"></div>
+<div class="page" id="page-platform"></div>
+<div class="page" id="page-indie"></div>
+<div class="page" id="page-genre"></div>
+
+<footer>
+    <p>Reddit 玩家讨论关注点双周看板（8.1~8.13） · v2.3（+ r/CozyGamers 热门品类数据） · 更新于 2026-08-13</p>
+</footer>
+
+</div>
+
+<script>
+// ============ DATA (single source of truth) ============
+// color: 分类主题色 | soft: 浅色底 | deep: 深色文字
+const CATEGORIES = [
+    {
+        key: 'general', icon: '🎮', name: '游戏综合分区', prio: 'P0 优先级',
+        color: '#6366f1', soft: '#eef2ff', deep: '#4338ca',
+        desc: '大众游戏讨论、行业新闻与跨平台热度',
+        subs: [
+            { num: '01', name: 'gaming',        desc: '最大众游戏讨论池，跨平台热度风向标（8600万+成员）' },
+            { num: '02', name: 'Games',         desc: '高质量游戏新闻与深度讨论，编辑风格社区' },
+            { num: '03', name: 'videogames',    desc: '泛游戏玩家话题池，游戏推荐与文化讨论' },
+            { num: '04', name: 'pcgaming',      desc: '电脑游戏生态、硬件配置与发行平台话题' },
+            { num: '05', name: 'Steam',         desc: 'Steam 平台与电脑游戏消费、游戏发现与购买决策' },
+        ]
+    },
+    {
+        key: 'hardware', icon: '🖥️', name: '硬件设备分区', prio: 'P1 优先级',
+        color: '#3b82f6', soft: '#eff6ff', deep: '#1d4ed8',
+        desc: '主机/掌机硬件、设备体验与平台生态',
+        subs: [
+            { num: '06', name: 'PS5',           desc: 'PlayStation 5 玩家购买决策与游戏讨论' },
+            { num: '07', name: 'XboxSeriesX',   desc: 'Xbox Series X|S 玩家生态与 Game Pass 话题' },
+            { num: '08', name: 'NintendoSwitch',desc: 'Nintendo Switch 用户、独占游戏与任天堂生态' },
+            { num: '09', name: 'SteamDeck',     desc: 'Steam Deck 掌机、便携电脑游戏与兼容性' },
+            { num: '10', name: 'Handhelds',     desc: '跨品牌掌机横向比较（Steam Deck / ROG Ally / NS 等）' },
+        ]
+    },
+    {
+        key: 'platform', icon: '🛒', name: 'Steam 平台分区', prio: 'P1 优先级',
+        color: '#f59e0b', soft: '#fef3c7', deep: '#92400e',
+        desc: '发行与分发平台维度',
+        subs: [
+            { num: '11', name: 'Steam',         desc: 'Steam 平台游戏发现、购买、折扣与愿望单（平台视角）', note: '⚠ 与 05 为同一社区，按"平台视角"维度复用' },
+        ]
+    },
+    {
+        key: 'indie', icon: '💎', name: '独立游戏分区', prio: 'P1-P2 优先级',
+        color: '#10b981', soft: '#ecfdf5', deep: '#047857',
+        desc: '独立游戏发现、开发者生态与创作趋势',
+        subs: [
+            { num: '12', name: 'IndieGames',    desc: '独立游戏玩家发现与讨论（60万+成员）' },
+            { num: '13', name: 'indiegames',    desc: '独立游戏内容池，玩家晒游戏与评测' },
+            { num: '14', name: 'IndieGaming',   desc: '独立游戏作品与创作者讨论' },
+            { num: '15', name: 'IndieDev',      desc: '独立开发者生态、发行与市场交流' },
+            { num: '16', name: 'gamedev',       desc: '游戏开发行业与产品方法论（百万人级）' },
+        ]
+    },
+    {
+        key: 'genre', icon: '🏷️', name: '热门品类分区', prio: 'P1 优先级',
+        color: '#ec4899', soft: '#fdf2f8', deep: '#be185d',
+        desc: '重点追踪的细分品类社区',
+        subs: [
+            { num: '17', name: 'roguelikes',    desc: 'Roguelike / Roguelite 玩家社区，品类趋势风向' },
+            { num: '18', name: 'CozyGamers',    desc: 'Cozy / 休闲治愈系游戏，轻量化玩家画像' },
+            { num: '19', name: 'MMORPG',        desc: 'MMORPG 与长期运营游戏玩家讨论' },
+            { num: '20', name: 'horrorGaming',  desc: '恐怖游戏与独立恐怖玩家社区' },
+        ]
+    }
+];
+
+// ============ r/gaming 分析数据 (v2.0) ============
+const GAMING_DATA = {
+    posts: 70, comments: 1721, totalComments: 16088, totalUpvotes: 44711,
+    window: '2026-08-01 ~ 08-13',
+    hotPosts: [
+        { title: '萨伯互动（Saber Interactive）首席执行官炫耀使用人工智能，嘲讽被裁编剧的顺风车《模拟器》（Stimulator）', score: 3202, comments: 370, rate: 378, url: 'https://www.reddit.com/r/gaming/comments/1vmw4e3/saber_interactive_ceo_brags_about_ai_usage_mocks/' },
+        { title: '我 5 岁的孩子放下平板上的《罗布乐思》（Roblox），改玩我的《宝可梦 黄》（Pokémon Yellow）', score: 1665, comments: 173, rate: 224, url: 'https://www.reddit.com/r/gaming/comments/1vmxick/my_5_year_old_just_stopped_playing_roblox_on_his/' },
+        { title: 'CD Projekt 裁撤《巫师》（The Witcher）衍生项目 20% 以上的开发团队', score: 1156, comments: 80, rate: 159, url: 'https://www.reddit.com/r/gaming/comments/1vmxpgu/cd_projekt_cuts_more_than_20_of_the_witcher/' },
+        { title: '《漫威蜘蛛侠 2》（Marvel\'s Spider-Man 2）借助"崭新一日"（Brand New Day）资料片，两周内在 PS5 与 Steam 创收 1100 万美元', score: 6053, comments: 459, rate: 156, url: 'https://www.reddit.com/r/gaming/comments/1vlps8k/marvels_spiderman_2_makes_11m_in_2_weeks_on_ps5/' },
+        { title: '华纳兄弟（Warner Bros.）正式官宣《霍格沃茨之遗 2》（Hogwarts Legacy 2）', score: 1665, comments: 661, rate: 121, url: 'https://www.reddit.com/r/gaming/comments/1vmo82o/hogwarts_legacy_2_officially_announced_by_warner/' },
+        { title: '开发者确认：更多经典《指环王》（The Lord of the Rings）游戏即将回归', score: 1691, comments: 211, rate: 83, url: 'https://www.reddit.com/r/gaming/comments/1vmdcwo/more_classic_lord_of_the_rings_games_are_coming/' },
+        { title: '《密卡变色龙》（Meccha Chameleon）销量突破 2000 万份', score: 1389, comments: 117, rate: 71, url: 'https://www.reddit.com/r/gaming/comments/1vmekjo/meccha_chameleon_has_sold_20_million_units/' },
+        { title: '玩一款游戏超过 1000 小时的人，你玩的是哪一款？', score: 2581, comments: 7468, rate: 49, url: 'https://www.reddit.com/r/gaming/comments/1vl76f8/for_people_who_have_played_a_game_for_over_1000/' }
+    ],
+    games: [
+        { name: '光环（Halo）', mentions: 31, posts: 3, comments: 28 },
+        { name: '匹诺曹的谎言（Lies of P）', mentions: 19, posts: 1, comments: 18 },
+        { name: '幽灵行者（Ghostrunner）', mentions: 18, posts: 1, comments: 17 },
+        { name: '赛博朋克（Cyberpunk）', mentions: 17, posts: 2, comments: 15 },
+        { name: '宝可梦（Pokémon）', mentions: 17, posts: 1, comments: 16 },
+        { name: '银河战士（Metroid）', mentions: 17, posts: 1, comments: 16 },
+        { name: '马力欧（Mario）', mentions: 14, posts: 0, comments: 14 },
+        { name: '索尼克（Sonic）', mentions: 12, posts: 1, comments: 11 },
+        { name: '黑暗之魂（Dark Souls）', mentions: 12, posts: 0, comments: 12 },
+        { name: '全面战争（Total War）', mentions: 11, posts: 1, comments: 10 }
+    ],
+    topics: [
+        { icon: '💾', name: '重制与经典回归', hits: 265, heat: 6584 },
+        { icon: '🤖', name: '人工智能与裁员争议', hits: 335, heat: 6524 },
+        { icon: '🎯', name: '玩家诉求与体验', hits: 203, heat: 5347 },
+        { icon: '🎬', name: '影视与游戏联动', hits: 86, heat: 4959 },
+        { icon: '👶', name: '家庭与代际', hits: 180, heat: 4662 },
+        { icon: '🔒', name: '数字版权管理（DRM）与技术优化', hits: 65, heat: 4122 },
+        { icon: '📰', name: '行业事件与并购', hits: 55, heat: 3991 },
+        { icon: '🛒', name: '平台与商店生态', hits: 155, heat: 2349 },
+        { icon: '🕹️', name: '掌机与便携', hits: 62, heat: 1828 },
+        { icon: '💰', name: '商业模式争议', hits: 21, heat: 563 }
+    ]
+};
+
+// ============ r/SteamDeck 硬件数据占位（v2.2） ============
+const HARDWARE_DATA = {
+    subreddit: 'SteamDeck',
+    window: '2026-08-01 ~ 08-13',
+    posts: 0, comments: 0,
+    summary: '近两周玩家在该专区提及的游戏包括《赛博朋克 2077》（Cyberpunk 2077），近期正式发售的《神之浩劫 2》（Smite 2）等等，大多为对性能要求更高，或是电脑/掌机热门的大作游戏。',
+    image: 'img/steamdeck.png',
+    imageCaption: 'Steam Deck 运行《星球大战：绝地幸存者》（Star Wars Jedi: Survivor）',
+    games: [
+        { name: '赛博朋克 2077（Cyberpunk 2077）', mentions: 0, posts: 0, comments: 0 },
+        { name: '神之浩劫 2（Smite 2）', mentions: 0, posts: 0, comments: 0 }
+    ],
+    topics: [
+        { icon: '🎮', name: '大作性能测试与优化', hits: 0, heat: 0 },
+        { icon: '🔋', name: '续航与散热表现', hits: 0, heat: 0 },
+        { icon: '⚙️', name: '系统更新与兼容性', hits: 0, heat: 0 }
+    ],
+    hotPosts: []
+};
+
+function renderHardwareAnalysis() {
+    const maxHeat = HARDWARE_DATA.topics[0].heat || 1;
+    const topicChips = HARDWARE_DATA.topics.slice(0, 6).map(t => `
+        <span class="topic-chip">${t.icon} ${t.name}<i>${t.heat ? t.heat.toLocaleString() : '—'}</i></span>`).join('');
+
+    const maxMentions = (HARDWARE_DATA.games[0] && HARDWARE_DATA.games[0].mentions) || 1;
+    const gameRows = HARDWARE_DATA.games.map((g, i) => `
+        <div class="grow-row">
+            <span class="gr-rank">${i + 1}</span>
+            <span class="gr-name">${g.name}</span>
+            <span class="gr-num">${g.mentions || '—'}</span>
+            <span class="gr-num">${g.posts || '—'}</span>
+            <span class="gr-num">${g.comments || '—'}</span>
+            <div class="gr-bar"><div class="gr-bar-fill" style="width:${g.mentions ? Math.round(g.mentions / maxMentions * 100) : 0}%"></div></div>
+        </div>`).join('');
+
+    const hotRows = HARDWARE_DATA.hotPosts.length ? HARDWARE_DATA.hotPosts.map((p, i) => `
+        <div class="hot-post">
+            <div class="hp-title">${i + 1}. ${p.title}</div>
+            <div class="hp-meta">热度 ${p.score.toLocaleString()} · ${p.comments.toLocaleString()} 条评论 · 每小时 ${p.rate} 分 · <a class="hp-link" href="${p.url}" target="_blank">查看原帖 ↗</a></div>
+        </div>`).join('') : '<div class="hot-post" style="color:var(--text2);font-style:italic;">数据抓取中，待接入…</div>';
+
+    return `
+        <div class="section">
+            <h2><span class="cat-icon">📋</span>r/SteamDeck 双周综述</h2>
+            <div class="section-desc">统计窗口 2026-08-01 ~ 08-13 · 硬件设备分区重点社区</div>
+            <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+                ${HARDWARE_DATA.summary}
+            </p>
+            <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:6px;">
+                <img src="${HARDWARE_DATA.image}" alt="Steam Deck 掌机" style="width:100%;display:block;">
+            </div>
+            <div style="font-size:0.78rem;color:var(--text2);text-align:center;margin-top:6px;">${HARDWARE_DATA.imageCaption}</div>
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">💬</span>玩家讨论焦点 · 主题聚类</h2>
+            <div class="section-desc">按评论获赞加权 · 前 3 大主题（数据抓取中）</div>
+            ${topicChips}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🎮</span>玩家最关注的游戏</h2>
+            <div class="section-desc">帖子标题+正文 + 评论全量词边界匹配 · 数据抓取中</div>
+            <div class="grow-head">
+                <span style="text-align:center">#</span><span>游戏</span><span style="text-align:right">提及</span><span style="text-align:right">帖</span><span style="text-align:right">评</span><span>热度占比</span>
+            </div>
+            ${gameRows}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🔥</span>热度最高帖子</h2>
+            <div class="section-desc">热度评分前 N · 数据抓取中</div>
+            ${hotRows}
+        </div>`;
+}
+
+// ============ r/Steam 平台数据占位（v2.2） ============
+const PLATFORM_DATA = {
+    subreddit: 'Steam',
+    window: '2026-08-01 ~ 08-13',
+    posts: 0, comments: 0,
+    summary: '近两周玩家在该专区内的热议游戏大多为 IP 大制作新游，包括近期上线的《指环王™：北境之战™》（The Lord of the Rings™: War in the North™），殖民模拟玩法新游《暗星铁律》（Dark Star Rule）等。',
+    image: 'img/steam_platform.png',
+    imageCaption: 'Steam 平台热门新游宣传图',
+    games: [
+        { name: '指环王™：北境之战™（The Lord of the Rings™: War in the North™）', mentions: 0, posts: 0, comments: 0 },
+        { name: '暗星铁律（Dark Star Rule）', mentions: 0, posts: 0, comments: 0 }
+    ],
+    topics: [
+        { icon: '🎮', name: '新游上线与首发评测', hits: 0, heat: 0 },
+        { icon: '🛒', name: '平台促销与购买决策', hits: 0, heat: 0 },
+        { icon: '💰', name: '定价与价值争议', hits: 0, heat: 0 }
+    ],
+    hotPosts: []
+};
+
+function renderPlatformAnalysis() {
+    const maxHeat = PLATFORM_DATA.topics[0].heat || 1;
+    const topicChips = PLATFORM_DATA.topics.slice(0, 6).map(t => `
+        <span class="topic-chip">${t.icon} ${t.name}<i>${t.heat ? t.heat.toLocaleString() : '—'}</i></span>`).join('');
+
+    const maxMentions = (PLATFORM_DATA.games[0] && PLATFORM_DATA.games[0].mentions) || 1;
+    const gameRows = PLATFORM_DATA.games.map((g, i) => `
+        <div class="grow-row">
+            <span class="gr-rank">${i + 1}</span>
+            <span class="gr-name">${g.name}</span>
+            <span class="gr-num">${g.mentions || '—'}</span>
+            <span class="gr-num">${g.posts || '—'}</span>
+            <span class="gr-num">${g.comments || '—'}</span>
+            <div class="gr-bar"><div class="gr-bar-fill" style="width:${g.mentions ? Math.round(g.mentions / maxMentions * 100) : 0}%"></div></div>
+        </div>`).join('');
+
+    const hotRows = PLATFORM_DATA.hotPosts.length ? PLATFORM_DATA.hotPosts.map((p, i) => `
+        <div class="hot-post">
+            <div class="hp-title">${i + 1}. ${p.title}</div>
+            <div class="hp-meta">热度 ${p.score.toLocaleString()} · ${p.comments.toLocaleString()} 条评论 · 每小时 ${p.rate} 分 · <a class="hp-link" href="${p.url}" target="_blank">查看原帖 ↗</a></div>
+        </div>`).join('') : '<div class="hot-post" style="color:var(--text2);font-style:italic;">数据抓取中，待接入…</div>';
+
+    return `
+        <div class="section">
+            <h2><span class="cat-icon">📋</span>r/Steam 双周综述</h2>
+            <div class="section-desc">统计窗口 2026-08-01 ~ 08-13 · Steam 平台分区重点社区</div>
+            <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+                ${PLATFORM_DATA.summary}
+            </p>
+            <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:6px;">
+                <img src="${PLATFORM_DATA.image}" alt="Steam 平台热门新游" style="width:100%;display:block;">
+            </div>
+            <div style="font-size:0.78rem;color:var(--text2);text-align:center;margin-top:6px;">${PLATFORM_DATA.imageCaption}</div>
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">💬</span>玩家讨论焦点 · 主题聚类</h2>
+            <div class="section-desc">按评论获赞加权 · 前 3 大主题（数据抓取中）</div>
+            ${topicChips}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🎮</span>玩家最关注的游戏</h2>
+            <div class="section-desc">帖子标题+正文 + 评论全量词边界匹配 · 数据抓取中</div>
+            <div class="grow-head">
+                <span style="text-align:center">#</span><span>游戏</span><span style="text-align:right">提及</span><span style="text-align:right">帖</span><span style="text-align:right">评</span><span>热度占比</span>
+            </div>
+            ${gameRows}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🔥</span>热度最高帖子</h2>
+            <div class="section-desc">热度评分前 N · 数据抓取中</div>
+            ${hotRows}
+        </div>`;
+}
+
+// ============ r/IndieGaming 独立游戏数据（v2.2） ============
+const INDIE_DATA = {
+    subreddit: 'IndieGaming',
+    window: '2026-08-01 ~ 08-13',
+    posts: 0, comments: 0,
+    summary: '该专区有大量的开发者会在这里发布研发过程中的早期游戏，该类新品一方面会择优推荐给游卡进行签约评估，同时玩家高赞的题材玩法也具备一定的关注价值。近两周热门新品包括：',
+    games: [
+        { name: 'Fallgrade', mentions: 1, posts: 1, comments: 0, upvotes: 900, desc: '第一人称冒险角色扮演玩法，依靠复古像素风叠加恐怖诡异的氛围影子', image: 'img/indie_fallgrade.jpg' },
+        { name: '紫菜卷工厂', mentions: 1, posts: 1, comments: 0, upvotes: 100, desc: '韩国个人开发者作品，厨房模拟经营玩法，作者自述灵感来自于《异星工厂 2》（Factorio 2）的差异化题材换皮，和小游戏端的"传送带类"玩法有一定共性', image: 'img/indie_norimaki.png' },
+        { name: 'INKURSION', mentions: 1, posts: 1, comments: 0, upvotes: 100, desc: '冒险角色扮演玩法，玩家扮演一只刚刚拥有自我意识的章鱼进行冒险战斗', image: 'img/indie_inkursion.jpg' }
+    ],
+    topics: [
+        { icon: '🎮', name: '新品发布与早期试玩', hits: 3, heat: 1100 },
+        { icon: '🎨', name: '复古像素与氛围美术', hits: 1, heat: 900 },
+        { icon: '🍳', name: '模拟经营与差异化换皮', hits: 1, heat: 100 },
+        { icon: '🐙', name: '新奇角色设定与叙事', hits: 1, heat: 100 }
+    ],
+    hotPosts: [
+        { title: 'Fallgrade — 第一人称冒险角色扮演，复古像素风叠加恐怖诡异氛围', score: 900, comments: 0, rate: 0, url: '#' },
+        { title: '紫菜卷工厂 — 韩国开发者厨房模拟经营，灵感来自《异星工厂 2》差异化换皮', score: 100, comments: 0, rate: 0, url: '#' },
+        { title: 'INKURSION — 冒险角色扮演，扮演自我意识觉醒的章鱼进行冒险战斗', score: 100, comments: 0, rate: 0, url: '#' }
+    ]
+};
+
+function renderIndieAnalysis() {
+    const maxHeat = INDIE_DATA.topics[0].heat;
+    const topicChips = INDIE_DATA.topics.slice(0, 6).map(t => `
+        <span class="topic-chip">${t.icon} ${t.name}<i>${t.heat.toLocaleString()}</i></span>`).join('');
+
+    const maxMentions = INDIE_DATA.games[0].mentions;
+    const gameRows = INDIE_DATA.games.map((g, i) => `
+        <div class="grow-row">
+            <span class="gr-rank">${i + 1}</span>
+            <span class="gr-name">${g.name}</span>
+            <span class="gr-num">${g.mentions}</span>
+            <span class="gr-num">${g.posts}</span>
+            <span class="gr-num">${g.comments}</span>
+            <div class="gr-bar"><div class="gr-bar-fill" style="width:${Math.round(g.mentions / maxMentions * 100)}%"></div></div>
+        </div>`).join('');
+
+    const hotRows = INDIE_DATA.hotPosts.map((p, i) => `
+        <div class="hot-post">
+            <div class="hp-title">${i + 1}. ${p.title}</div>
+            <div class="hp-meta">热度 ${p.score.toLocaleString()} · ${p.comments.toLocaleString()} 条评论${p.rate ? ' · 每小时 ' + p.rate + ' 分' : ''} · <a class="hp-link" href="${p.url}" target="_blank">查看原帖 ↗</a></div>
+        </div>`).join('');
+
+    const gameCards = INDIE_DATA.games.map((g, i) => `
+        <div class="section" style="margin-top:${i===0?0:'16px'};">
+            <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+                <div style="flex:0 0 220px;max-width:100%;">
+                    <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);">
+                        <img src="${g.image}" alt="${g.name}" style="width:100%;display:block;">
+                    </div>
+                    <div style="font-size:0.78rem;color:var(--text2);text-align:center;margin-top:6px;">${g.name} · 热度 ${g.upvotes.toLocaleString()}</div>
+                </div>
+                <div style="flex:1;min-width:200px;">
+                    <h3 style="margin:0 0 8px 0;font-size:1.05rem;color:var(--accent);">${g.name}</h3>
+                    <p style="font-size:0.9rem;line-height:1.7;color:var(--text);margin:0;">${g.desc}</p>
+                </div>
+            </div>
+        </div>`).join('');
+
+    return `
+        <div class="section">
+            <h2><span class="cat-icon">📋</span>r/IndieGaming 双周综述</h2>
+            <div class="section-desc">统计窗口 2026-08-01 ~ 08-13 · 独立游戏分区重点社区</div>
+            <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+                ${INDIE_DATA.summary}
+            </p>
+        </div>
+        ${gameCards}
+        <div class="section">
+            <h2><span class="cat-icon">💬</span>玩家讨论焦点 · 主题聚类</h2>
+            <div class="section-desc">按评论获赞加权 · 前 4 大主题</div>
+            ${topicChips}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🎮</span>玩家最关注的游戏</h2>
+            <div class="section-desc">帖子标题+正文 + 评论全量词边界匹配 · 每帖/每评仅计一次 · 提及次数 = 帖 + 评</div>
+            <div class="grow-head">
+                <span style="text-align:center">#</span><span>游戏</span><span style="text-align:right">提及</span><span style="text-align:right">帖</span><span style="text-align:right">评</span><span>热度占比</span>
+            </div>
+            ${gameRows}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🔥</span>热度最高帖子</h2>
+            <div class="section-desc">热度评分前 3 · 近两周热门新品</div>
+            ${hotRows}
+        </div>`;
+}
+
+// ============ r/CozyGamers 热门品类数据（v2.3） ============
+const COZY_DATA = {
+    subreddit: 'CozyGamers',
+    window: '2026-08-01 ~ 08-13',
+    posts: 0, comments: 0,
+    summary: '该专区玩家更关注各类偏向于休闲、解压、治愈向的游戏，近两周热门新品包括：',
+    games: [
+        { name: '猫咪岛（Cat Island）', mentions: 1, posts: 1, comments: 0, upvotes: 200, desc: '首月销量 1 万份，灵感来自日本著名的猫岛与吉卜力工作室（Studio Ghibli）温馨的氛围。将灯光管理与装饰、钓鱼以及与日益壮大的可爱猫咪社区共度时光相结合。玩家可用超过 100 个像素艺术装饰品自定义岛屿。', image: 'img/cozy_cat_island.jpg' },
+        { name: '图书管理员：整理魔法图书馆吧（The Librarian: Organize the Magic Library）', mentions: 1, posts: 1, comments: 0, upvotes: 800, desc: '首年销量 150 万+，图书收纳类玩法。该品类拥有忠实的用户群体，近期不断有类似玩法的新品涌现。', image: 'img/cozy_librarian.jpg' },
+        { name: '摸鱼作家（Slacking Writer）', mentions: 1, posts: 1, comments: 0, upvotes: 150, desc: '桌面挂机玩法，玩家点击鼠标即可在游戏中不停写书、出版、赚钱养活自己。', image: 'img/cozy_writer.jpg' }
+    ],
+    topics: [
+        { icon: '🐱', name: '治愈休闲与猫咪社区', hits: 1, heat: 200 },
+        { icon: '📚', name: '模拟经营与收纳玩法', hits: 1, heat: 800 },
+        { icon: '🖥️', name: '桌面挂机与挂机放置', hits: 1, heat: 150 },
+        { icon: '🎨', name: '像素艺术与温馨美术', hits: 1, heat: 100 }
+    ],
+    hotPosts: [
+        { title: '猫咪岛（Cat Island）— 首月销量 1 万，日本猫岛灵感，像素装饰+钓鱼+猫咪社区', score: 200, comments: 0, rate: 0, url: '#' },
+        { title: '图书管理员：整理魔法图书馆吧 — 首年销量 150 万+，图书收纳玩法持续涌现新品', score: 800, comments: 0, rate: 0, url: '#' },
+        { title: '摸鱼作家 — 桌面挂机，点击鼠标写书出版赚钱', score: 150, comments: 0, rate: 0, url: '#' }
+    ]
+};
+
+function renderCozyAnalysis() {
+    const maxHeat = COZY_DATA.topics[0].heat;
+    const topicChips = COZY_DATA.topics.slice(0, 6).map(t => `
+        <span class="topic-chip">${t.icon} ${t.name}<i>${t.heat.toLocaleString()}</i></span>`).join('');
+
+    const maxMentions = COZY_DATA.games[0].mentions;
+    const gameRows = COZY_DATA.games.map((g, i) => `
+        <div class="grow-row">
+            <span class="gr-rank">${i + 1}</span>
+            <span class="gr-name">${g.name}</span>
+            <span class="gr-num">${g.mentions}</span>
+            <span class="gr-num">${g.posts}</span>
+            <span class="gr-num">${g.comments}</span>
+            <div class="gr-bar"><div class="gr-bar-fill" style="width:${Math.round(g.mentions / maxMentions * 100)}%"></div></div>
+        </div>`).join('');
+
+    const hotRows = COZY_DATA.hotPosts.map((p, i) => `
+        <div class="hot-post">
+            <div class="hp-title">${i + 1}. ${p.title}</div>
+            <div class="hp-meta">热度 ${p.score.toLocaleString()} · ${p.comments.toLocaleString()} 条评论${p.rate ? ' · 每小时 ' + p.rate + ' 分' : ''} · <a class="hp-link" href="${p.url}" target="_blank">查看原帖 ↗</a></div>
+        </div>`).join('');
+
+    const gameCards = COZY_DATA.games.map((g, i) => `
+        <div class="section" style="margin-top:${i===0?0:'16px'};">
+            <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+                <div style="flex:0 0 220px;max-width:100%;">
+                    <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);">
+                        <img src="${g.image}" alt="${g.name}" style="width:100%;display:block;">
+                    </div>
+                    <div style="font-size:0.78rem;color:var(--text2);text-align:center;margin-top:6px;">${g.name.split('（')[0]} · 热度 ${g.upvotes.toLocaleString()}</div>
+                </div>
+                <div style="flex:1;min-width:200px;">
+                    <h3 style="margin:0 0 8px 0;font-size:1.05rem;color:var(--accent);">${g.name.split('（')[0]}</h3>
+                    <p style="font-size:0.9rem;line-height:1.7;color:var(--text);margin:0;">${g.desc}</p>
+                </div>
+            </div>
+        </div>`).join('');
+
+    return `
+        <div class="section">
+            <h2><span class="cat-icon">📋</span>r/CozyGamers 双周综述</h2>
+            <div class="section-desc">统计窗口 2026-08-01 ~ 08-13 · 热门品类分区重点社区</div>
+            <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+                ${COZY_DATA.summary}
+            </p>
+        </div>
+        ${gameCards}
+        <div class="section">
+            <h2><span class="cat-icon">💬</span>玩家讨论焦点 · 主题聚类</h2>
+            <div class="section-desc">按评论获赞加权 · 前 4 大主题</div>
+            ${topicChips}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🎮</span>玩家最关注的游戏</h2>
+            <div class="section-desc">帖子标题+正文 + 评论全量词边界匹配 · 每帖/每评仅计一次 · 提及次数 = 帖 + 评</div>
+            <div class="grow-head">
+                <span style="text-align:center">#</span><span>游戏</span><span style="text-align:right">提及</span><span style="text-align:right">帖</span><span style="text-align:right">评</span><span>热度占比</span>
+            </div>
+            ${gameRows}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🔥</span>热度最高帖子</h2>
+            <div class="section-desc">热度评分前 3 · 近两周热门新品</div>
+            ${hotRows}
+        </div>`;
+}
+
+// ============ RENDER: overview ============
+function renderOverview() {
+    // Category summary cards
+    const grid = document.getElementById('cat-summary-grid');
+    grid.innerHTML = CATEGORIES.map(cat => `
+        <div class="cat-summary-card" style="--cat-color:${cat.color};--cat-soft:${cat.soft}" onclick="switchTab('${cat.key}')">
+            <div class="cat-summary-header">
+                <span class="cat-summary-icon">${cat.icon}</span>
+                <span class="cat-summary-name">${cat.name}</span>
+            </div>
+            <div class="cat-summary-desc">${cat.desc}</div>
+            <div class="cat-summary-subs">
+                ${cat.subs.map(s => `<span class="mini-chip">${s.num} r/${s.name}</span>`).join('')}
+            </div>
+            <div class="cat-summary-footer">
+                <span>${cat.prio}</span>
+                <span>${cat.subs.length} 个社区 →</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Full table
+    const tbody = document.getElementById('full-table-body');
+    tbody.innerHTML = CATEGORIES.map(cat => cat.subs.map(s => `
+        <tr>
+            <td><b>${s.num}</b></td>
+            <td><b>r/${s.name}</b></td>
+            <td><span class="cat-badge" style="--badge-bg:${cat.soft};--badge-fg:${cat.deep}">${cat.icon} ${cat.name}</span></td>
+            <td>${s.desc}${s.note ? ' <span class="tag-note">' + s.note + '</span>' : ''}</td>
+        </tr>
+    `).join('')).join('');
+}
+
+// ============ RENDER: category pages ============
+function renderGamingAnalysis() {
+    const maxHeat = GAMING_DATA.topics[0].heat;
+    const topicChips = GAMING_DATA.topics.slice(0, 6).map(t => `
+        <span class="topic-chip">${t.icon} ${t.name}<i>${t.heat.toLocaleString()}</i></span>`).join('');
+
+    const hotRows = GAMING_DATA.hotPosts.map((p, i) => `
+        <div class="hot-post">
+            <div class="hp-title">${i + 1}. ${p.title}</div>
+            <div class="hp-meta">热度 ${p.score.toLocaleString()} · ${p.comments.toLocaleString()} 条评论 · 每小时 ${p.rate} 分 · <a class="hp-link" href="${p.url}" target="_blank">查看原帖 ↗</a></div>
+        </div>`).join('');
+
+    const maxMentions = GAMING_DATA.games[0].mentions;
+    const gameRows = GAMING_DATA.games.map((g, i) => `
+        <div class="grow-row">
+            <span class="gr-rank">${i + 1}</span>
+            <span class="gr-name">${g.name}</span>
+            <span class="gr-num">${g.mentions}</span>
+            <span class="gr-num">${g.posts}</span>
+            <span class="gr-num">${g.comments}</span>
+            <div class="gr-bar"><div class="gr-bar-fill" style="width:${Math.round(g.mentions / maxMentions * 100)}%"></div></div>
+        </div>`).join('');
+
+    return `
+        <div class="section">
+            <h2><span class="cat-icon">📋</span>r/gaming 双周综述</h2>
+            <div class="section-desc">统计窗口 2026-08-01 ~ 08-13 · 玩家讨论整体画像</div>
+            <p style="font-size:0.92rem;line-height:1.75;color:var(--text);margin-bottom:14px;">
+                近两周玩家在 r/gaming 中整体关注的重点聚焦在<strong>经典 IP 大作的相关动态</strong>上，比如《黑暗之魂》（Dark Souls）系列、《哈迪斯》（Hades）系列、《光环》（Halo）系列、《漫威蜘蛛侠》（Marvel's Spider-Man）系列、《霍格沃茨之遗》（Hogwarts Legacy）系列等。国产游戏《影之刃零》（Phantom Blade Zero）也有一定讨论热度。此外，人工智能用于游戏开发、行业裁员与跨媒体联动等话题同样引发大量玩家关注。
+            </p>
+            <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:6px;">
+                <img src="img/hogwarts_legacy_2.jpg" alt="霍格沃茨之遗 2 官宣" style="width:100%;display:block;">
+            </div>
+            <div style="font-size:0.78rem;color:var(--text2);text-align:center;margin-top:6px;">华纳兄弟（Warner Bros.）正式官宣《霍格沃茨之遗 2》（Hogwarts Legacy 2）</div>
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">💬</span>玩家讨论焦点 · 主题聚类</h2>
+            <div class="section-desc">按评论获赞加权 · 前 6 大主题（共 10 个）</div>
+            ${topicChips}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🎮</span>玩家最关注的游戏（前 10 名）</h2>
+            <div class="section-desc">帖子标题+正文 + 评论全量词边界匹配 · 每帖/每评仅计一次 · 提及次数 = 帖 + 评</div>
+            <div class="grow-head">
+                <span style="text-align:center">#</span><span>游戏</span><span style="text-align:right">提及</span><span style="text-align:right">帖</span><span style="text-align:right">评</span><span>热度占比</span>
+            </div>
+            ${gameRows}
+        </div>
+        <div class="section">
+            <h2><span class="cat-icon">🔥</span>热度最高帖子</h2>
+            <div class="section-desc">热度评分前 8 · 完整榜单见原报告</div>
+            ${hotRows}
+        </div>`;
+}
+
+function renderCategoryPages() {
+    CATEGORIES.forEach(cat => {
+        const page = document.getElementById('page-' + cat.key);
+        const cards = cat.subs.map(s => `
+            <div class="sub-card">
+                <div class="sub-num">${s.num}</div>
+                <div class="sub-name">r/${s.name}${s.name === 'gaming' || s.name === 'SteamDeck' || s.name === 'Steam' || s.name === 'IndieGaming' || s.name === 'CozyGamers' ? '<span class="tag-done">已抓取</span>' : ''}</div>
+                <div class="sub-desc">${s.desc}</div>
+                ${s.note ? `<div><span class="tag-note">${s.note}</span></div>` : ''}
+            </div>
+        `).join('');
+        const analysis = cat.key === 'general' ? renderGamingAnalysis() :
+                         cat.key === 'hardware' ? renderHardwareAnalysis() :
+                         cat.key === 'platform' ? renderPlatformAnalysis() :
+                         cat.key === 'indie' ? renderIndieAnalysis() :
+                         cat.key === 'genre' ? renderCozyAnalysis() : '';
+        page.innerHTML = `
+            <div class="cat-hero" style="--cat-color:${cat.color}">
+                <h2><span>${cat.icon}</span>${cat.name}</h2>
+                <p>${cat.desc}</p>
+                <span class="cat-prio">${cat.prio}</span>
+            </div>
+            <div class="section">
+                <h2><span class="cat-icon">📌</span>监控社区（${cat.subs.length} 个）</h2>
+                <div class="section-desc">${cat.subs.map(s => 'r/' + s.name).join(' · ')}</div>
+                <div class="sub-grid" style="--cat-color:${cat.color}">${cards}</div>
+            </div>
+            ${analysis}
+        `;
+    });
+}
+
+// ============ TAB SWITCHING ============
+function switchTab(pageKey) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.page === pageKey);
+    });
+    // Update pages
+    document.querySelectorAll('.page').forEach(pg => {
+        pg.classList.toggle('active', pg.id === 'page-' + pageKey);
+    });
+    // Scroll to top of container
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.page));
+});
+
+// ============ INIT ============
+renderOverview();
+renderCategoryPages();
+</script>
+</body>
+</html>
